@@ -31,33 +31,33 @@ A aplicação sobe **dois servidores NestJS** no mesmo processo (`src/main.ts`):
 
 ```
 src/
-├── main.ts                     # Bootstrap: cria coleções do MemoryDB, sobe API (3000) e Auth (3001)
+├── main.ts                     # Bootstrap: MemoryDB + API (3000) e Auth (3001)
 ├── app.module.ts               # Módulo da API Pix (controllers + provider PSP)
 ├── auth.module.ts              # Módulo de autenticação (AuthController + Auth)
-├── http.interceptor.ts         # Autenticação via header mocked-token e padronização de erros
+├── http.interceptor.ts         # Header mocked-token + erros padrão BACEN
 ├── swagger-app.config.ts       # Configuração Swagger da API (porta 3000)
-├── swagger-auth.config.ts      # Configuração Swagger da autenticação (porta 3001)
+├── swagger-auth.config.ts      # Configuração Swagger da Auth (porta 3001)
 ├── controllers/
 │   ├── auth.controller.ts      # POST /auth
-│   ├── auth.models.ts          # DTO ValidateInput (grant_type, client_id, client_secret)
+│   ├── auth.models.ts          # DTO ValidateInput
 │   ├── cob.controller.ts       # /cob   — cobrança imediata
 │   ├── cobv.controller.ts      # /cobv  — cobrança com vencimento
 │   ├── cobr.controller.ts      # /cobr  — cobrança recorrente
 │   ├── rec.controller.ts       # /rec   — recorrências
 │   ├── location.controller.ts  # /loc   — locations (payload/QR Code)
 │   ├── webhook.controller.ts   # vazio (não implementado)
-│   └── fakedb.ts               # cópia duplicada de libs/fakedb.ts (não utilizada)
+│   └── fakedb.ts               # cópia de libs/fakedb.ts (não usada)
 ├── core/
 │   ├── app/
-│   │   ├── psp.ts              # Serviço PSP: regras de negócio de cob/cobv/cobr/loc/rec
-│   │   ├── models.ts           # Tipos comuns (PixRequest, PixKey, TipoCob, paginação...)
+│   │   ├── psp.ts              # Serviço PSP (regras de negócio)
+│   │   ├── models.ts           # Tipos comuns (PixRequest, TipoCob...)
 │   │   ├── validators.ts       # Validadores de domínio
-│   │   └── models/             # DTOs por recurso: cob.ts, cobv.ts, cobr.ts, loc.ts, rec.ts
+│   │   └── models/             # DTOs: cob, cobv, cobr, loc, rec
 │   └── auth/
-│       ├── auth.ts             # Serviço Auth (valida client_id/client_secret contra owners)
+│       ├── auth.ts             # Serviço Auth (valida contra owners)
 │       └── models.ts
 ├── libs/
-│   ├── fakedb.ts               # MemoryDB (coleções em memória com clusterKey + sortKeys)
+│   ├── fakedb.ts               # MemoryDB (clusterKey + sortKeys)
 │   ├── messages.ts             # Mensagens de erro/validação
 │   ├── documentos.ts           # Utilitários de CPF/CNPJ
 │   └── utils.ts                # Utilitários gerais
@@ -79,13 +79,13 @@ Requisição HTTP
 HttpInterceptor ── valida header "mocked-token" e injeta IdOwner
      │
      ▼
-Controller (cob / cobv / cobr / loc / rec) ── recebe DTO validado pelo ValidationPipe
+Controller (cob/cobv/cobr/loc/rec) ── DTO validado (ValidationPipe)
      │
      ▼
-PSP (src/core/app/psp.ts) ── regras de negócio: txid, revisão, vínculo loc↔cob, paginação
+PSP (core/app/psp.ts) ── txid, revisão, vínculo loc↔cob, paginação
      │
      ▼
-MemoryDB (src/libs/fakedb.ts) ── coleções em memória particionadas por IdOwner (clusterKey)
+MemoryDB (libs/fakedb.ts) ── coleções em memória por IdOwner
 ```
 
 - **Controllers** apenas extraem `IdOwner` dos headers, montam um `PixRequest<T>` (`{ IdOwner, txid, data }`) e delegam ao serviço.
