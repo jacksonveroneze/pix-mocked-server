@@ -196,7 +196,7 @@ curl -s http://localhost:3000/cob -H 'mocked-token: 123-abc'
 ### 5.2 Testes (Jest)
 
 ```bash
-npm test               # jest (cobertura habilitada em jest.config.ts, saída em coverage/)
+npm test               # jest (com cobertura, saída em coverage/)
 npm run test:watch
 npm run test:cov
 ```
