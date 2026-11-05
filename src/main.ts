@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MemoryDB } from './libs/fakedb';
-import {correntistas} from './data/db.json'
+import { setupDatabase } from './database';
 import { AuthModule } from './auth.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
@@ -11,8 +10,7 @@ import { swaggerAuthConfig } from './swagger-auth.config';
 async function bootstrap() {
   
   
-  MemoryDB.create("COB", ['txid']);
-  MemoryDB.create("LOCATIONS", ['id', 'uuid']);
+  await setupDatabase();
 
   const ServerErrorTypes = {
     400: { type: "https://pix.bcb.gov.br/api/v2/error/CobOperacaoInvalida", title: "Payload inválido" },
@@ -22,10 +20,6 @@ async function bootstrap() {
 }
 
 
-  const corr =  MemoryDB.create("CORRENTISTAS", ['chave']);
-    await Promise.all(correntistas.map(async (c) => {
-      await corr.add('DEV', c)
-    }));
   
   //SERVIÇO PRINCIPAL  
   const app = await NestFactory.create(AppModule);
